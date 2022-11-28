@@ -494,12 +494,18 @@ tcp[12] = | Offset|
 	  |       |
 	  +-+-+-+-+
 
+	            +-+-+-+-+
+	            |  Data |
+(tcp[12]&0xf0)>>2 = | Offset| <-- TCP header length: same as ((tcp[12]&0xf0)>>4)<<2
+	            |       |
+	            +-+-+-+-+
+
 So what we are doing here is "(IP total length - IP header length - TCP header length) != 0"
 
 We are matching any packet that contains data.
 
 
-We are taking the IHL (total IP lenght
+We are taking the IHL (total IP length) 
 
 
 Matching other interesting TCP things :
@@ -587,6 +593,7 @@ tcp[(((tcp[12:1] & 0xf0) >> 2) + 8):2] = 0x2030
 Which in English would be: 
 - take the upper 4 bits of the 12th octet in the tcp header ( tcp[12:1] & 0xf0 )
 - multiply it by four ( (tcp[12:1] & 0xf0)>>2 ) which should give the tcp header length
+  - ( (tcp[12:1] & 0xf0)>>2 ) <==> ( ((tcp[12:1] & 0xf0)>>4)<<2 )
 - add 8 ( ((tcp[12:1] & 0xf0) >> 2) + 8 ) gives the offset into the tcp header of the space before the first octet of the response code
 - now take two octets from the tcp stream, starting at that offset ( tcp[(((tcp[12:1] & 0xf0) >> 2) + 8):2]  )
 - and verify that they are " 0" ( = 0x2030 )
