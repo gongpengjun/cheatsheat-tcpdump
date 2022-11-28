@@ -374,6 +374,9 @@ I use something like http://www.easycalculation.com/ascii-hex.php to convert val
 
 "MAIL" in hex is 0x4d41494c
 
+$ echo -n "MAIL" | hexdump -C
+00000000  4d 41 49 4c |MAIL|
+
 The rule would be :
 
 # tcpdump -i eth1 '((port 25) and (tcp[20:4] = 0x4d41494c))'
@@ -471,6 +474,8 @@ character following the GET command (a space)
  
 # tcpdump -i eth1 'tcp[32:4] = 0x47455420'
 
+$ echo -n "GET " | hexdump -C
+00000000  47 45 54 20 |GET |
 
 Matching HTTP data (exemple taken from tcpdump man page) : 
 
@@ -518,10 +523,16 @@ The first 4 bytes (SSH-) have an hex value of 0x5353482D.
 
 # tcpdump -i eth1 'tcp[(tcp[12]>>2):4] = 0x5353482D'
 
+$ echo -n "SSH-"|hexdump -C
+00000000  53 53 48 2d |SSH-|
+
 If we want to find any connection made to older version of OpenSSH (version 1, which are insecure and subject to MITM attacks) : 
 The reply from the server would be something like "SSH-1.99.."
 
 # tcpdump -i eth1 '(tcp[(tcp[12]>>2):4] = 0x5353482D) and (tcp[((tcp[12]>>2)+4):2] = 0x312E)'
+
+$ echo -n "SSH-1."|hexdump -C
+00000000  53 53 48 2d 31 2e |SSH-1.|
 
 Explanation of >>2 can be found below in the reference section.
 
@@ -601,6 +612,9 @@ Which in English would be:
 Of course this can give you false positives, so you might want to add a test for "HTTP" and the start of the tcp payload with:
 
 tcp[((tcp[12:1] & 0xf0) >> 2):4] = 0x48545450
+
+$ echo -n "HTTP" | hexdump -C
+00000000  48 54 54 50 |HTTP|
 
 resulting in the filter:
 
